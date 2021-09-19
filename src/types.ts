@@ -17,6 +17,7 @@ export type AnyFunction = (...args: any[]) => any;
 export type WorkerBridgeConfig = {
   file: string | (() => Worker);
   sharedApi?: Record<string, AnyFunction>;
+  parseMessagesWithJSON?: boolean;
 };
 
 export type GetSharedApi<C extends WorkerBridgeConfig> =
@@ -46,3 +47,8 @@ export type WorkerResponsePayload = {
 };
 
 export type WorkerMessage = WorkerRequestPayload | WorkerResponsePayload;
+
+export type MessagePacker = {
+  read(v: any): WorkerMessage;
+  create(v: WorkerMessage): any;
+};

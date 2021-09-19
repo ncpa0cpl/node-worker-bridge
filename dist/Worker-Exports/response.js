@@ -4,9 +4,9 @@ exports.redirectWorkerMethods = void 0;
 const worker_threads_1 = require("worker_threads");
 const types_1 = require("../types");
 /** @internal */
-function redirectWorkerMethods(methods) {
+function redirectWorkerMethods(methods, Message) {
     worker_threads_1.parentPort.addListener("message", async (ev) => {
-        const data = JSON.parse(ev);
+        const data = Message.read(ev);
         if (data.type === types_1.MessageType.REQUEST) {
             if (data.methodName in methods) {
                 const method = methods[data.methodName];
@@ -17,7 +17,7 @@ function redirectWorkerMethods(methods) {
                         id: data.id,
                         result,
                     };
-                    worker_threads_1.parentPort.postMessage(JSON.stringify(response));
+                    worker_threads_1.parentPort.postMessage(Message.create(response));
                 }
                 catch (e) {
                     const error = e instanceof Error
@@ -31,7 +31,7 @@ function redirectWorkerMethods(methods) {
                         result: null,
                         error,
                     };
-                    worker_threads_1.parentPort.postMessage(JSON.stringify(response));
+                    worker_threads_1.parentPort.postMessage(Message.create(response));
                 }
             }
             else {
@@ -41,7 +41,7 @@ function redirectWorkerMethods(methods) {
                     result: null,
                     error: `Undefined exported worker method: [${data.methodName}]`,
                 };
-                worker_threads_1.parentPort.postMessage(JSON.stringify(response));
+                worker_threads_1.parentPort.postMessage(Message.create(response));
             }
         }
     });

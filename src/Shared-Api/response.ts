@@ -1,4 +1,5 @@
 import type { Worker } from "worker_threads";
+import type { MessagePacker } from "..";
 import type {
   WorkerBridgeConfig,
   WorkerMessage,
@@ -7,11 +8,15 @@ import type {
 import { MessageType } from "../types";
 
 /** @internal */
-export function redirectSharedApiCalls(w: Worker, config: WorkerBridgeConfig) {
+export function redirectSharedApiCalls(
+  w: Worker,
+  config: WorkerBridgeConfig,
+  Message: MessagePacker
+) {
   const { sharedApi = {} } = config;
 
   w.addListener("message", async (ev) => {
-    const data = JSON.parse(ev) as WorkerMessage;
+    const data = Message.read(ev);
 
     if (data.type === MessageType.REQUEST) {
       if (data.methodName in sharedApi) {
@@ -25,7 +30,7 @@ export function redirectSharedApiCalls(w: Worker, config: WorkerBridgeConfig) {
             result,
           };
 
-          w.postMessage(JSON.stringify(response));
+          w.postMessage(Message.create(response));
         } catch (e) {
           const error =
             e instanceof Error
@@ -41,7 +46,7 @@ export function redirectSharedApiCalls(w: Worker, config: WorkerBridgeConfig) {
             error,
           };
 
-          w.postMessage(JSON.stringify(response));
+          w.postMessage(Message.create(response));
         }
       } else {
         const response: WorkerResponsePayload = {
@@ -51,7 +56,7 @@ export function redirectSharedApiCalls(w: Worker, config: WorkerBridgeConfig) {
           error: `Undefined api call: [${data.methodName}]`,
         };
 
-        w.postMessage(JSON.stringify(response));
+        w.postMessage(Message.create(response));
       }
     }
   });

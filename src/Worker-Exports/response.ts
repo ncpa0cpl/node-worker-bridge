@@ -1,4 +1,5 @@
 import { parentPort } from "worker_threads";
+import type { MessagePacker } from "..";
 import type {
   AnyFunction,
   WorkerMessage,
@@ -8,10 +9,11 @@ import { MessageType } from "../types";
 
 /** @internal */
 export function redirectWorkerMethods<E extends Record<string, AnyFunction>>(
-  methods: E
+  methods: E,
+  Message: MessagePacker
 ) {
   parentPort!.addListener("message", async (ev) => {
-    const data = JSON.parse(ev) as WorkerMessage;
+    const data = Message.read(ev) as WorkerMessage;
 
     if (data.type === MessageType.REQUEST) {
       if (data.methodName in methods) {
@@ -26,7 +28,7 @@ export function redirectWorkerMethods<E extends Record<string, AnyFunction>>(
             result,
           };
 
-          parentPort!.postMessage(JSON.stringify(response));
+          parentPort!.postMessage(Message.create(response));
         } catch (e) {
           const error =
             e instanceof Error
@@ -42,7 +44,7 @@ export function redirectWorkerMethods<E extends Record<string, AnyFunction>>(
             error,
           };
 
-          parentPort!.postMessage(JSON.stringify(response));
+          parentPort!.postMessage(Message.create(response));
         }
       } else {
         const response: WorkerResponsePayload = {
@@ -52,7 +54,7 @@ export function redirectWorkerMethods<E extends Record<string, AnyFunction>>(
           error: `Undefined exported worker method: [${data.methodName}]`,
         };
 
-        parentPort!.postMessage(JSON.stringify(response));
+        parentPort!.postMessage(Message.create(response));
       }
     }
   });

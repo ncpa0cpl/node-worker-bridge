@@ -9,6 +9,7 @@ export declare type AnyFunction = (...args: any[]) => any;
 export declare type WorkerBridgeConfig = {
     file: string | (() => Worker);
     sharedApi?: Record<string, AnyFunction>;
+    parseMessagesWithJSON?: boolean;
 };
 export declare type GetSharedApi<C extends WorkerBridgeConfig> = C["sharedApi"] extends object ? C["sharedApi"] : Record<never, AnyFunction>;
 export declare type WorkerBridgeInterface<T extends Record<string, AnyFunction>> = {
@@ -31,3 +32,7 @@ export declare type WorkerResponsePayload = {
     result: unknown;
 };
 export declare type WorkerMessage = WorkerRequestPayload | WorkerResponsePayload;
+export declare type MessagePacker = {
+    read(v: any): WorkerMessage;
+    create(v: WorkerMessage): any;
+};

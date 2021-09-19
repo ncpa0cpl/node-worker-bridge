@@ -24,7 +24,7 @@ const types_1 = require("../types");
 const uuid = __importStar(require("uuid"));
 const worker_threads_1 = require("worker_threads");
 /** @internal */
-function getSharedApi() {
+function getSharedApi(Message) {
     const methods = new Proxy({}, {
         get(_, methodName) {
             return (...args) => {
@@ -36,7 +36,7 @@ function getSharedApi() {
                 };
                 return new Promise((resolve, reject) => {
                     worker_threads_1.parentPort.addListener("message", (data) => {
-                        const eventPayload = JSON.parse(data);
+                        const eventPayload = Message.read(data);
                         if (eventPayload.type === types_1.MessageType.RESPONSE) {
                             if (payload.id === eventPayload.id) {
                                 if (eventPayload.error) {
@@ -51,7 +51,7 @@ function getSharedApi() {
                     worker_threads_1.parentPort.addListener("messageerror", (err) => {
                         reject(err);
                     });
-                    worker_threads_1.parentPort?.postMessage(JSON.stringify(payload));
+                    worker_threads_1.parentPort?.postMessage(Message.create(payload));
                 });
             };
         },

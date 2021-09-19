@@ -7,10 +7,12 @@ import type {
   WorkerRequestPayload,
 } from "../types";
 import { MessageType } from "../types";
+import type { MessagePacker } from "..";
 
 /** @internal */
 export function getWorkerMethodsProxy<M extends Record<string, AnyFunction>>(
-  w: Worker
+  w: Worker,
+  Message: MessagePacker
 ) {
   const methods = new Proxy(
     {},
@@ -26,7 +28,7 @@ export function getWorkerMethodsProxy<M extends Record<string, AnyFunction>>(
 
           return new Promise((resolve, reject) => {
             w.addListener("message", (ev) => {
-              const data = JSON.parse(ev) as WorkerMessage;
+              const data = Message.read(ev);
 
               if (data.type === MessageType.RESPONSE) {
                 if (data.id === payload.id) {
@@ -47,7 +49,7 @@ export function getWorkerMethodsProxy<M extends Record<string, AnyFunction>>(
               reject(e);
             });
 
-            w.postMessage(JSON.stringify(payload));
+            w.postMessage(Message.create(payload));
           });
         };
       },

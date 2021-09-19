@@ -1,4 +1,5 @@
 import { isMainThread, Worker } from "worker_threads";
+import { getMessagePacker } from "./Message/message";
 import { getSharedApi } from "./Shared-Api/request";
 import { redirectSharedApiCalls } from "./Shared-Api/response";
 import type {
@@ -18,6 +19,8 @@ export function WorkerBridge<
   config: C,
   workerExport: (sharedApi: PromisifyDict<GetSharedApi<C>>) => E
 ): WorkerBridgeInterface<E> {
+  const Message = getMessagePacker(config);
+
   if (isMainThread) {
     return {
       spawn() {
@@ -26,18 +29,18 @@ export function WorkerBridge<
             ? new Worker(config.file)
             : config.file();
 
-        redirectSharedApiCalls(worker, config);
+        redirectSharedApiCalls(worker, config, Message);
 
-        return getWorkerMethodsProxy<E>(worker);
+        return getWorkerMethodsProxy<E>(worker, Message);
       },
     };
   }
 
-  const sharedApi = getSharedApi<GetSharedApi<C>>();
+  const sharedApi = getSharedApi<GetSharedApi<C>>(Message);
 
   const exportedMethods = workerExport(sharedApi);
 
-  redirectWorkerMethods(exportedMethods);
+  redirectWorkerMethods(exportedMethods, Message);
 
   return {
     spawn() {

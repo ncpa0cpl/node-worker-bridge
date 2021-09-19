@@ -23,7 +23,7 @@ exports.getWorkerMethodsProxy = void 0;
 const uuid = __importStar(require("uuid"));
 const types_1 = require("../types");
 /** @internal */
-function getWorkerMethodsProxy(w) {
+function getWorkerMethodsProxy(w, Message) {
     const methods = new Proxy({}, {
         get(_, methodName) {
             return (...args) => {
@@ -35,7 +35,7 @@ function getWorkerMethodsProxy(w) {
                 };
                 return new Promise((resolve, reject) => {
                     w.addListener("message", (ev) => {
-                        const data = JSON.parse(ev);
+                        const data = Message.read(ev);
                         if (data.type === types_1.MessageType.RESPONSE) {
                             if (data.id === payload.id) {
                                 if (data.error) {
@@ -53,7 +53,7 @@ function getWorkerMethodsProxy(w) {
                     w.addListener("messageerror", (e) => {
                         reject(e);
                     });
-                    w.postMessage(JSON.stringify(payload));
+                    w.postMessage(Message.create(payload));
                 });
             };
         },

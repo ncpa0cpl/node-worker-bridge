@@ -7,9 +7,12 @@ import type {
 import { MessageType } from "../types";
 import * as uuid from "uuid";
 import { parentPort } from "worker_threads";
+import type { MessagePacker } from "..";
 
 /** @internal */
-export function getSharedApi<M extends Record<string, AnyFunction>>() {
+export function getSharedApi<M extends Record<string, AnyFunction>>(
+  Message: MessagePacker
+) {
   const methods = new Proxy(
     {},
     {
@@ -24,7 +27,7 @@ export function getSharedApi<M extends Record<string, AnyFunction>>() {
 
           return new Promise((resolve, reject) => {
             parentPort!.addListener("message", (data: string) => {
-              const eventPayload = JSON.parse(data) as WorkerMessage;
+              const eventPayload = Message.read(data);
 
               if (eventPayload.type === MessageType.RESPONSE) {
                 if (payload.id === eventPayload.id) {
@@ -41,7 +44,7 @@ export function getSharedApi<M extends Record<string, AnyFunction>>() {
               reject(err);
             });
 
-            parentPort?.postMessage(JSON.stringify(payload));
+            parentPort?.postMessage(Message.create(payload));
           });
         };
       },

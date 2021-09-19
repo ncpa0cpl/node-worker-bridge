@@ -3,10 +3,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.redirectSharedApiCalls = void 0;
 const types_1 = require("../types");
 /** @internal */
-function redirectSharedApiCalls(w, config) {
+function redirectSharedApiCalls(w, config, Message) {
     const { sharedApi = {} } = config;
     w.addListener("message", async (ev) => {
-        const data = JSON.parse(ev);
+        const data = Message.read(ev);
         if (data.type === types_1.MessageType.REQUEST) {
             if (data.methodName in sharedApi) {
                 const method = sharedApi[data.methodName];
@@ -17,7 +17,7 @@ function redirectSharedApiCalls(w, config) {
                         id: data.id,
                         result,
                     };
-                    w.postMessage(JSON.stringify(response));
+                    w.postMessage(Message.create(response));
                 }
                 catch (e) {
                     const error = e instanceof Error
@@ -31,7 +31,7 @@ function redirectSharedApiCalls(w, config) {
                         result: null,
                         error,
                     };
-                    w.postMessage(JSON.stringify(response));
+                    w.postMessage(Message.create(response));
                 }
             }
             else {
@@ -41,7 +41,7 @@ function redirectSharedApiCalls(w, config) {
                     result: null,
                     error: `Undefined api call: [${data.methodName}]`,
                 };
-                w.postMessage(JSON.stringify(response));
+                w.postMessage(Message.create(response));
             }
         }
     });
