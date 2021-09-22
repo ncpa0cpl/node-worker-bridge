@@ -29,6 +29,8 @@ export function WorkerBridge<
             ? new Worker(config.file)
             : config.file();
 
+        worker.unref();
+
         redirectSharedApiCalls(worker, config, Message);
 
         return getWorkerMethodsProxy<E>(worker, Message);

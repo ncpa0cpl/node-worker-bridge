@@ -23,8 +23,14 @@ export type WorkerBridgeConfig = {
 export type GetSharedApi<C extends WorkerBridgeConfig> =
   C["sharedApi"] extends object ? C["sharedApi"] : Record<never, AnyFunction>;
 
+export type WorkerInterface<T extends Record<string, AnyFunction>> =
+  PromisifyDict<T> & {
+    stop(): Promise<number>;
+    _worker_thread_instance: Worker;
+  };
+
 export type WorkerBridgeInterface<T extends Record<string, AnyFunction>> = {
-  spawn(): PromisifyDict<T>;
+  spawn(): WorkerInterface<T>;
 };
 
 export enum MessageType {
