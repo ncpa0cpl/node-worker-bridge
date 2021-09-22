@@ -1,14 +1,14 @@
 {
-  "name": "worker-bridge",
-  "version": "1.0.0",
+  "name": "node-worker-bridge",
+  "version": "0.0.1",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "rm ./dist -rf && tsc"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Bretner Szymon",
+  "license": "MIT",
   "devDependencies": {
     "@types/node": "^16.9.3",
     "@types/uuid": "^8.3.1",

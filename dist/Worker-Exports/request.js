@@ -24,13 +24,20 @@ const uuid = __importStar(require("uuid"));
 const types_1 = require("../types");
 /** @internal */
 function getWorkerMethodsProxy(w, Message) {
-    const methods = new Proxy({}, {
-        get(_, methodName) {
+    const builtinMethods = {
+        stop: () => w.terminate(),
+        _worker_thread_instance: w,
+    };
+    const methods = new Proxy(builtinMethods, {
+        get(target, propertyName) {
+            if (propertyName in target) {
+                return target[propertyName];
+            }
             return (...args) => {
                 const payload = {
                     type: types_1.MessageType.REQUEST,
                     id: uuid.v4(),
-                    methodName,
+                    methodName: propertyName,
                     params: args,
                 };
                 return new Promise((resolve, reject) => {

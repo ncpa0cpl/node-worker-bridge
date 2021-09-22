@@ -15,6 +15,7 @@ function WorkerBridge(config, workerExport) {
                 const worker = typeof config.file === "string"
                     ? new worker_threads_1.Worker(config.file)
                     : config.file();
+                worker.unref();
                 (0, response_1.redirectSharedApiCalls)(worker, config, Message);
                 return (0, request_2.getWorkerMethodsProxy)(worker, Message);
             },

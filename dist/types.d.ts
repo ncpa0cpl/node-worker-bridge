@@ -12,8 +12,12 @@ export declare type WorkerBridgeConfig = {
     parseMessagesWithJSON?: boolean;
 };
 export declare type GetSharedApi<C extends WorkerBridgeConfig> = C["sharedApi"] extends object ? C["sharedApi"] : Record<never, AnyFunction>;
+export declare type WorkerInterface<T extends Record<string, AnyFunction>> = PromisifyDict<T> & {
+    stop(): Promise<number>;
+    _worker_thread_instance: Worker;
+};
 export declare type WorkerBridgeInterface<T extends Record<string, AnyFunction>> = {
-    spawn(): PromisifyDict<T>;
+    spawn(): WorkerInterface<T>;
 };
 export declare enum MessageType {
     RESPONSE = "RESPONSE",
