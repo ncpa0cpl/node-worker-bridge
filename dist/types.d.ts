@@ -18,6 +18,7 @@ export declare type WorkerInterface<T extends Record<string, AnyFunction>> = Pro
 };
 export declare type WorkerBridgeInterface<T extends Record<string, AnyFunction>> = {
     spawn(): WorkerInterface<T>;
+    createPool(poolSize: number): WorkerPool<T>;
 };
 export declare enum MessageType {
     RESPONSE = "RESPONSE",
@@ -39,4 +40,11 @@ export declare type WorkerMessage = WorkerRequestPayload | WorkerResponsePayload
 export declare type MessagePacker = {
     read(v: any): WorkerMessage;
     create(v: WorkerMessage): any;
+};
+export declare type WorkerPool<T extends Record<string, AnyFunction>> = PromisifyDict<T> & {
+    close(): void;
+};
+export declare type PoolWorkerThread<T extends Record<string, AnyFunction>> = {
+    instance: WorkerInterface<T>;
+    currentJob: Promise<unknown> | undefined;
 };

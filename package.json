@@ -5,17 +5,20 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "rm ./dist -rf && tsc"
+    "build": "rm ./dist -rf && tsc -p ./tsconfig.build.json"
   },
   "author": "Bretner Szymon",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^16.9.3",
     "@types/uuid": "^8.3.1",
+    "@types/jest": "^27.0.2",
     "@typescript-eslint/eslint-plugin": "^4.31.1",
     "@typescript-eslint/parser": "^4.31.1",
     "eslint": "^7.32.0",
+    "jest": "^27.2.1",
     "prettier": "^2.4.1",
+    "ts-jest": "^27.0.5",
     "typescript": "^4.4.3",
     "webpack-cli": "^4.8.0"
   },

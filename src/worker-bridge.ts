@@ -1,5 +1,6 @@
 import { isMainThread, Worker } from "worker_threads";
 import { getMessagePacker } from "./Message/message";
+import { createPool as cp } from "./Pool/worker-pool";
 import { getSharedApi } from "./Shared-Api/request";
 import { redirectSharedApiCalls } from "./Shared-Api/response";
 import type {
@@ -22,19 +23,26 @@ export function WorkerBridge<
   const Message = getMessagePacker(config);
 
   if (isMainThread) {
+    const spawn = () => {
+      const worker =
+        typeof config.file === "string"
+          ? new Worker(config.file)
+          : config.file();
+
+      worker.unref();
+
+      redirectSharedApiCalls(worker, config, Message);
+
+      return getWorkerMethodsProxy<E>(worker, Message);
+    };
+
+    const createPool = (poolSize: number) => {
+      return cp({ spawn }, poolSize);
+    };
+
     return {
-      spawn() {
-        const worker =
-          typeof config.file === "string"
-            ? new Worker(config.file)
-            : config.file();
-
-        worker.unref();
-
-        redirectSharedApiCalls(worker, config, Message);
-
-        return getWorkerMethodsProxy<E>(worker, Message);
-      },
+      spawn,
+      createPool,
     };
   }
 
@@ -46,6 +54,11 @@ export function WorkerBridge<
 
   return {
     spawn() {
+      throw new Error(
+        "Worker Bridge Interface can only be used within the main thread."
+      );
+    },
+    createPool() {
       throw new Error(
         "Worker Bridge Interface can only be used within the main thread."
       );
