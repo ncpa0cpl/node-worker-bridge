@@ -18,7 +18,7 @@ const STOPPED_WORKER_THREAD: PoolWorkerThread<any> = {
 };
 
 export function createPool<T extends Record<string, AnyFunction>>(
-  bridge: Pick<WorkerBridgeInterface<T>, "spawn">,
+  bridge: Pick<WorkerBridgeInterface<T, any>, "spawn">,
   poolSize: number
 ): WorkerPool<T> {
   let isClosed = false;

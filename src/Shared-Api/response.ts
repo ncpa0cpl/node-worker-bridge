@@ -1,8 +1,8 @@
 import type { Worker } from "worker_threads";
 import type { MessagePacker } from "..";
 import type {
+  AnyFunction,
   WorkerBridgeConfig,
-  WorkerMessage,
   WorkerResponsePayload,
 } from "../types";
 import { MessageType } from "../types";
@@ -10,11 +10,9 @@ import { MessageType } from "../types";
 /** @internal */
 export function redirectSharedApiCalls(
   w: Worker,
-  config: WorkerBridgeConfig,
+  sharedApi: Record<string, AnyFunction>,
   Message: MessagePacker
 ) {
-  const { sharedApi = {} } = config;
-
   w.addListener("message", async (ev) => {
     const data = Message.read(ev);
 

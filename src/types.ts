@@ -29,9 +29,12 @@ export type WorkerInterface<T extends Record<string, AnyFunction>> =
     _worker_thread_instance: Worker;
   };
 
-export type WorkerBridgeInterface<T extends Record<string, AnyFunction>> = {
-  spawn(): WorkerInterface<T>;
-  createPool(poolSize: number): WorkerPool<T>;
+export type WorkerBridgeInterface<
+  T extends Record<string, AnyFunction>,
+  C extends Record<string, AnyFunction>
+> = {
+  spawn(api?: Partial<C>): WorkerInterface<T>;
+  createPool(poolSize: number, api?: Partial<C>): WorkerPool<T>;
 };
 
 export enum MessageType {

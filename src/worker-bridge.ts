@@ -1,3 +1,4 @@
+import type { ECDH } from "crypto";
 import { isMainThread, Worker } from "worker_threads";
 import { getMessagePacker } from "./Message/message";
 import { createPool as cp } from "./Pool/worker-pool";
@@ -19,11 +20,13 @@ export function WorkerBridge<
 >(
   config: C,
   workerExport: (sharedApi: PromisifyDict<GetSharedApi<C>>) => E
-): WorkerBridgeInterface<E> {
+): WorkerBridgeInterface<E, GetSharedApi<C>> {
+  const { sharedApi = {} } = config;
+
   const Message = getMessagePacker(config);
 
   if (isMainThread) {
-    const spawn = () => {
+    const spawn = (api: Partial<GetSharedApi<C>> = {}) => {
       const worker =
         typeof config.file === "string"
           ? new Worker(config.file)
@@ -31,13 +34,13 @@ export function WorkerBridge<
 
       worker.unref();
 
-      redirectSharedApiCalls(worker, config, Message);
+      redirectSharedApiCalls(worker, { ...sharedApi, ...api }, Message);
 
       return getWorkerMethodsProxy<E>(worker, Message);
     };
 
-    const createPool = (poolSize: number) => {
-      return cp({ spawn }, poolSize);
+    const createPool = (poolSize: number, api?: Partial<GetSharedApi<C>>) => {
+      return cp({ spawn: () => spawn(api) }, poolSize);
     };
 
     return {
@@ -46,9 +49,9 @@ export function WorkerBridge<
     };
   }
 
-  const sharedApi = getSharedApi<GetSharedApi<C>>(Message);
+  const api = getSharedApi<GetSharedApi<C>>(Message);
 
-  const exportedMethods = workerExport(sharedApi);
+  const exportedMethods = workerExport(api);
 
   redirectWorkerMethods(exportedMethods, Message);
 
