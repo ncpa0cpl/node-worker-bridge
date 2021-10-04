@@ -17,6 +17,9 @@ const STOPPED_WORKER_THREAD: PoolWorkerThread<any> = {
   currentJob: undefined,
 };
 
+/**
+ * @internal
+ */
 export function createPool<T extends Record<string, AnyFunction>>(
   bridge: Pick<WorkerBridgeInterface<T, any>, "spawn">,
   poolSize: number

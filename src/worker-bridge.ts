@@ -1,4 +1,5 @@
 import { isMainThread, Worker } from "worker_threads";
+import type { WorkerPool } from ".";
 import { getMessagePacker } from "./Message/message";
 import { createPool as cp } from "./Pool/worker-pool";
 import { getSharedApi } from "./SharedApi/request";
@@ -38,7 +39,10 @@ export function WorkerBridge<
       return getWorkerMethodsProxy<E>(worker, Message);
     };
 
-    const createPool = (poolSize: number, api?: Partial<GetSharedApi<C>>) => {
+    const createPool = (
+      poolSize: number,
+      api?: Partial<GetSharedApi<C>>
+    ): WorkerPool<E> => {
       return cp({ spawn: () => spawn(api) }, poolSize);
     };
 

@@ -11,6 +11,9 @@ const STOPPED_WORKER_THREAD = {
     }),
     currentJob: undefined,
 };
+/**
+ * @internal
+ */
 function createPool(bridge, poolSize) {
     let isClosed = false;
     const pool = Array.from({ length: poolSize }, () => ({

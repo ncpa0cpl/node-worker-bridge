@@ -1,6 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getMessagePacker = void 0;
+/**
+ * @internal
+ */
 const getMessagePacker = (config) => {
     const { parseMessagesWithJSON = false } = config;
     if (parseMessagesWithJSON) {

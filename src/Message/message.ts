@@ -4,6 +4,9 @@ import type {
   WorkerMessage,
 } from "../types";
 
+/**
+ * @internal
+ */
 export const getMessagePacker = (config: WorkerBridgeConfig): MessagePacker => {
   const { parseMessagesWithJSON = false } = config;
 
