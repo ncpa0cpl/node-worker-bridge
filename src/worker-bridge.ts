@@ -1,9 +1,8 @@
-import type { ECDH } from "crypto";
 import { isMainThread, Worker } from "worker_threads";
 import { getMessagePacker } from "./Message/message";
 import { createPool as cp } from "./Pool/worker-pool";
-import { getSharedApi } from "./Shared-Api/request";
-import { redirectSharedApiCalls } from "./Shared-Api/response";
+import { getSharedApi } from "./SharedApi/request";
+import { redirectSharedApiCalls } from "./SharedApi/response";
 import type {
   AnyFunction,
   GetSharedApi,
@@ -11,8 +10,8 @@ import type {
   WorkerBridgeConfig,
   WorkerBridgeInterface,
 } from "./types";
-import { getWorkerMethodsProxy } from "./Worker-Exports/request";
-import { redirectWorkerMethods } from "./Worker-Exports/response";
+import { getWorkerMethodsProxy } from "./WorkerExports/request";
+import { redirectWorkerMethods } from "./WorkerExports/response";
 
 export function WorkerBridge<
   E extends Record<string, AnyFunction>,

@@ -37,11 +37,17 @@ export type WorkerBridgeInterface<
   createPool(poolSize: number, api?: Partial<C>): WorkerPool<T>;
 };
 
+/**
+ * @internal
+ */
 export enum MessageType {
   RESPONSE = "RESPONSE",
   REQUEST = "REQUEST",
 }
 
+/**
+ * @internal
+ */
 export type WorkerRequestPayload = {
   type: MessageType.REQUEST;
   id: string;
@@ -49,6 +55,9 @@ export type WorkerRequestPayload = {
   params: unknown[];
 };
 
+/**
+ * @internal
+ */
 export type WorkerResponsePayload = {
   type: MessageType.RESPONSE;
   id: string;
@@ -56,8 +65,14 @@ export type WorkerResponsePayload = {
   result: unknown;
 };
 
+/**
+ * @internal
+ */
 export type WorkerMessage = WorkerRequestPayload | WorkerResponsePayload;
 
+/**
+ * @internal
+ */
 export type MessagePacker = {
   read(v: any): WorkerMessage;
   create(v: WorkerMessage): any;

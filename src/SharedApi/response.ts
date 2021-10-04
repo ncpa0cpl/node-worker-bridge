@@ -1,8 +1,7 @@
 import type { Worker } from "worker_threads";
-import type { MessagePacker } from "..";
 import type {
   AnyFunction,
-  WorkerBridgeConfig,
+  MessagePacker,
   WorkerResponsePayload,
 } from "../types";
 import { MessageType } from "../types";

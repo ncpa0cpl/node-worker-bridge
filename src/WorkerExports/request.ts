@@ -1,14 +1,27 @@
-import type { Worker } from "worker_threads";
 import * as uuid from "uuid";
-import type { AnyFunction, WorkerRequestPayload } from "../types";
+import type { Worker } from "worker_threads";
+import { createSubscriptionManager } from "../SubscriptionManager";
+import type {
+  AnyFunction,
+  MessagePacker,
+  WorkerInterface,
+  WorkerMessage,
+  WorkerRequestPayload,
+} from "../types";
 import { MessageType } from "../types";
-import type { MessagePacker, WorkerInterface } from "..";
 
 /** @internal */
 export function getWorkerMethodsProxy<M extends Record<string, AnyFunction>>(
   w: Worker,
   Message: MessagePacker
 ): WorkerInterface<M> {
+  const messageManager = createSubscriptionManager<[WorkerMessage]>();
+
+  w.addListener("message", (ev) => {
+    const data = Message.read(ev);
+    messageManager.notify(data);
+  });
+
   const builtinMethods: WorkerInterface<Record<never, unknown>> = {
     stop: () => w.terminate(),
     _worker_thread_instance: w,
@@ -29,26 +42,17 @@ export function getWorkerMethodsProxy<M extends Record<string, AnyFunction>>(
         };
 
         return new Promise((resolve, reject) => {
-          w.addListener("message", (ev) => {
-            const data = Message.read(ev);
-
-            if (data.type === MessageType.RESPONSE) {
-              if (data.id === payload.id) {
-                if (data.error) {
-                  reject(new Error(data.error));
+          const sub = messageManager.subscribe((message) => {
+            if (message.type === MessageType.RESPONSE) {
+              if (message.id === payload.id) {
+                sub.remove();
+                if (message.error) {
+                  reject(new Error(message.error));
                 } else {
-                  resolve(data.result);
+                  resolve(message.result);
                 }
               }
             }
-          });
-
-          w.addListener("error", (e) => {
-            reject(e);
-          });
-
-          w.addListener("messageerror", (e) => {
-            reject(e);
           });
 
           w.postMessage(Message.create(payload));

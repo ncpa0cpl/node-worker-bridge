@@ -1,4 +1,8 @@
-import type { MessagePacker, WorkerBridgeConfig, WorkerMessage } from "..";
+import type {
+  MessagePacker,
+  WorkerBridgeConfig,
+  WorkerMessage,
+} from "../types";
 
 export const getMessagePacker = (config: WorkerBridgeConfig): MessagePacker => {
   const { parseMessagesWithJSON = false } = config;

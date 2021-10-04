@@ -1,18 +1,26 @@
+import * as uuid from "uuid";
+import { parentPort } from "worker_threads";
+import { createSubscriptionManager } from "../SubscriptionManager";
 import type {
   AnyFunction,
+  MessagePacker,
   PromisifyDict,
   WorkerMessage,
   WorkerRequestPayload,
 } from "../types";
 import { MessageType } from "../types";
-import * as uuid from "uuid";
-import { parentPort } from "worker_threads";
-import type { MessagePacker } from "..";
 
 /** @internal */
 export function getSharedApi<M extends Record<string, AnyFunction>>(
   Message: MessagePacker
 ) {
+  const messageManager = createSubscriptionManager<[WorkerMessage]>();
+
+  parentPort!.addListener("message", (data) => {
+    const message = Message.read(data);
+    messageManager.notify(message);
+  });
+
   const methods = new Proxy(
     {},
     {
@@ -26,22 +34,17 @@ export function getSharedApi<M extends Record<string, AnyFunction>>(
           };
 
           return new Promise((resolve, reject) => {
-            parentPort!.addListener("message", (data: string) => {
-              const eventPayload = Message.read(data);
-
-              if (eventPayload.type === MessageType.RESPONSE) {
-                if (payload.id === eventPayload.id) {
-                  if (eventPayload.error) {
-                    reject(new Error(eventPayload.error));
+            const sub = messageManager.subscribe((message) => {
+              if (message.type === MessageType.RESPONSE) {
+                if (payload.id === message.id) {
+                  sub.remove();
+                  if (message.error) {
+                    reject(new Error(message.error));
                   } else {
-                    resolve(eventPayload.result);
+                    resolve(message.result);
                   }
                 }
               }
-            });
-
-            parentPort!.addListener("messageerror", (err) => {
-              reject(err);
             });
 
             parentPort?.postMessage(Message.create(payload));

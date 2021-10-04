@@ -1,3 +1,9 @@
 export { WorkerBridge } from "./worker-bridge";
 
-export * from "./types";
+export {
+  AnyFunction,
+  WorkerBridgeConfig,
+  WorkerBridgeInterface,
+  WorkerInterface,
+  WorkerPool,
+} from "./types";

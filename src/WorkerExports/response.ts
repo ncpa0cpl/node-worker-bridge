@@ -1,7 +1,7 @@
 import { parentPort } from "worker_threads";
-import type { MessagePacker } from "..";
 import type {
   AnyFunction,
+  MessagePacker,
   WorkerMessage,
   WorkerResponsePayload,
 } from "../types";
