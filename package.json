@@ -5,7 +5,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "rm ./dist -rf && tsc -p ./tsconfig.build.json"
+    "build": "rm ./dist -rf && tsc -p ./tsconfig.build.json",
+    "test": "jest --coverage"
   },
   "author": "Bretner Szymon",
   "license": "MIT",
