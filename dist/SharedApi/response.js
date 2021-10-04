@@ -3,8 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.redirectSharedApiCalls = void 0;
 const types_1 = require("../types");
 /** @internal */
-function redirectSharedApiCalls(w, config, Message) {
-    const { sharedApi = {} } = config;
+function redirectSharedApiCalls(w, sharedApi, Message) {
     w.addListener("message", async (ev) => {
         const data = Message.read(ev);
         if (data.type === types_1.MessageType.REQUEST) {

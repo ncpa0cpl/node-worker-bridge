@@ -16,30 +16,9 @@ export declare type WorkerInterface<T extends Record<string, AnyFunction>> = Pro
     stop(): Promise<number>;
     _worker_thread_instance: Worker;
 };
-export declare type WorkerBridgeInterface<T extends Record<string, AnyFunction>> = {
-    spawn(): WorkerInterface<T>;
-    createPool(poolSize: number): WorkerPool<T>;
-};
-export declare enum MessageType {
-    RESPONSE = "RESPONSE",
-    REQUEST = "REQUEST"
-}
-export declare type WorkerRequestPayload = {
-    type: MessageType.REQUEST;
-    id: string;
-    methodName: string;
-    params: unknown[];
-};
-export declare type WorkerResponsePayload = {
-    type: MessageType.RESPONSE;
-    id: string;
-    error?: string;
-    result: unknown;
-};
-export declare type WorkerMessage = WorkerRequestPayload | WorkerResponsePayload;
-export declare type MessagePacker = {
-    read(v: any): WorkerMessage;
-    create(v: WorkerMessage): any;
+export declare type WorkerBridgeInterface<T extends Record<string, AnyFunction>, C extends Record<string, AnyFunction>> = {
+    spawn(api?: Partial<C>): WorkerInterface<T>;
+    createPool(poolSize: number, api?: Partial<C>): WorkerPool<T>;
 };
 export declare type WorkerPool<T extends Record<string, AnyFunction>> = PromisifyDict<T> & {
     close(): void;

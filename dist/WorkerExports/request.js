@@ -21,9 +21,15 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getWorkerMethodsProxy = void 0;
 const uuid = __importStar(require("uuid"));
+const SubscriptionManager_1 = require("../SubscriptionManager");
 const types_1 = require("../types");
 /** @internal */
 function getWorkerMethodsProxy(w, Message) {
+    const messageManager = (0, SubscriptionManager_1.createSubscriptionManager)();
+    w.addListener("message", (ev) => {
+        const data = Message.read(ev);
+        messageManager.notify(data);
+    });
     const builtinMethods = {
         stop: () => w.terminate(),
         _worker_thread_instance: w,
@@ -41,24 +47,18 @@ function getWorkerMethodsProxy(w, Message) {
                     params: args,
                 };
                 return new Promise((resolve, reject) => {
-                    w.addListener("message", (ev) => {
-                        const data = Message.read(ev);
-                        if (data.type === types_1.MessageType.RESPONSE) {
-                            if (data.id === payload.id) {
-                                if (data.error) {
-                                    reject(new Error(data.error));
+                    const sub = messageManager.subscribe((message) => {
+                        if (message.type === types_1.MessageType.RESPONSE) {
+                            if (message.id === payload.id) {
+                                sub.remove();
+                                if (message.error) {
+                                    reject(new Error(message.error));
                                 }
                                 else {
-                                    resolve(data.result);
+                                    resolve(message.result);
                                 }
                             }
                         }
-                    });
-                    w.addListener("error", (e) => {
-                        reject(e);
-                    });
-                    w.addListener("messageerror", (e) => {
-                        reject(e);
                     });
                     w.postMessage(Message.create(payload));
                 });

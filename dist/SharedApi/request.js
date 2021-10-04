@@ -20,11 +20,17 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getSharedApi = void 0;
-const types_1 = require("../types");
 const uuid = __importStar(require("uuid"));
 const worker_threads_1 = require("worker_threads");
+const SubscriptionManager_1 = require("../SubscriptionManager");
+const types_1 = require("../types");
 /** @internal */
 function getSharedApi(Message) {
+    const messageManager = (0, SubscriptionManager_1.createSubscriptionManager)();
+    worker_threads_1.parentPort.addListener("message", (data) => {
+        const message = Message.read(data);
+        messageManager.notify(message);
+    });
     const methods = new Proxy({}, {
         get(_, methodName) {
             return (...args) => {
@@ -35,21 +41,18 @@ function getSharedApi(Message) {
                     params: args,
                 };
                 return new Promise((resolve, reject) => {
-                    worker_threads_1.parentPort.addListener("message", (data) => {
-                        const eventPayload = Message.read(data);
-                        if (eventPayload.type === types_1.MessageType.RESPONSE) {
-                            if (payload.id === eventPayload.id) {
-                                if (eventPayload.error) {
-                                    reject(new Error(eventPayload.error));
+                    const sub = messageManager.subscribe((message) => {
+                        if (message.type === types_1.MessageType.RESPONSE) {
+                            if (payload.id === message.id) {
+                                sub.remove();
+                                if (message.error) {
+                                    reject(new Error(message.error));
                                 }
                                 else {
-                                    resolve(eventPayload.result);
+                                    resolve(message.result);
                                 }
                             }
                         }
-                    });
-                    worker_threads_1.parentPort.addListener("messageerror", (err) => {
-                        reject(err);
                     });
                     worker_threads_1.parentPort?.postMessage(Message.create(payload));
                 });
