@@ -6,8 +6,7 @@ import { getSharedApi } from "./SharedApi/request";
 import { redirectSharedApiCalls } from "./SharedApi/response";
 import type {
   AnyFunction,
-  GetSharedApi,
-  PromisifyDict,
+  DepromisifyDict,
   WorkerBridgeConfig,
   WorkerBridgeInterface,
 } from "./types";
@@ -16,17 +15,13 @@ import { redirectWorkerMethods } from "./WorkerExports/response";
 
 export function WorkerBridge<
   E extends Record<string, AnyFunction>,
-  C extends WorkerBridgeConfig
->(
-  config: C,
-  workerExport: (sharedApi: PromisifyDict<GetSharedApi<C>>) => E
-): WorkerBridgeInterface<E, GetSharedApi<C>> {
-  const { sharedApi = {} } = config;
-
+  C extends WorkerBridgeConfig,
+  S extends Record<string, (...args: any[]) => Promise<any>> = {}
+>(config: C, workerExport: (sharedApi: S) => E): WorkerBridgeInterface<E, S> {
   const Message = getMessagePacker(config);
 
   if (isMainThread) {
-    const spawn = (api: Partial<GetSharedApi<C>> = {}) => {
+    const spawn = (api: DepromisifyDict<S>) => {
       const worker =
         typeof config.file === "string"
           ? new Worker(config.file)
@@ -34,14 +29,14 @@ export function WorkerBridge<
 
       worker.unref();
 
-      redirectSharedApiCalls(worker, { ...sharedApi, ...api }, Message);
+      redirectSharedApiCalls(worker, { ...api }, Message);
 
       return getWorkerMethodsProxy<E>(worker, Message);
     };
 
     const createPool = (
       poolSize: number,
-      api?: Partial<GetSharedApi<C>>
+      api: DepromisifyDict<S>
     ): WorkerPool<E> => {
       return cp({ spawn: () => spawn(api) }, poolSize);
     };
@@ -49,10 +44,10 @@ export function WorkerBridge<
     return {
       spawn,
       createPool,
-    };
+    } as any;
   }
 
-  const api = getSharedApi<GetSharedApi<C>>(Message);
+  const api = getSharedApi<S>(Message);
 
   const exportedMethods = workerExport(api);
 

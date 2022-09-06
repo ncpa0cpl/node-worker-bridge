@@ -4,7 +4,6 @@ import { createSubscriptionManager } from "../SubscriptionManager";
 import type {
   AnyFunction,
   MessagePacker,
-  PromisifyDict,
   WorkerMessage,
   WorkerRequestPayload,
 } from "../types";
@@ -54,5 +53,5 @@ export function getSharedApi<M extends Record<string, AnyFunction>>(
     }
   );
 
-  return methods as PromisifyDict<M>;
+  return methods as M;
 }

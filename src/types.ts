@@ -8,20 +8,29 @@ export type Promisify<F extends AnyFunction> = F extends (
   ? (...args: A) => AssertPromise<R>
   : never;
 
+export type Depromisify<F extends AnyFunction> = F extends (
+  ...args: infer A
+) => Promise<infer R>
+  ? (...args: A) => R | Promise<R>
+  : F;
+
 export type PromisifyDict<D extends Record<string, AnyFunction>> = {
   [K in keyof D]: Promisify<D[K]>;
+};
+
+export type DepromisifyDict<D extends Record<string, AnyFunction>> = {
+  [K in keyof D]: Depromisify<D[K]>;
 };
 
 export type AnyFunction = (...args: any[]) => any;
 
 export type WorkerBridgeConfig = {
   file: string | (() => Worker);
-  sharedApi?: Record<string, AnyFunction>;
   parseMessagesWithJSON?: boolean;
 };
 
-export type GetSharedApi<C extends WorkerBridgeConfig> =
-  C["sharedApi"] extends object ? C["sharedApi"] : Record<never, AnyFunction>;
+// export type GetSharedApi<C extends WorkerBridgeConfig> =
+//   C["sharedApi"] extends object ? C["sharedApi"] : Record<never, AnyFunction>;
 
 export type WorkerInterface<T extends Record<string, AnyFunction>> =
   PromisifyDict<T> & {
@@ -32,10 +41,15 @@ export type WorkerInterface<T extends Record<string, AnyFunction>> =
 export type WorkerBridgeInterface<
   T extends Record<string, AnyFunction>,
   C extends Record<string, AnyFunction>
-> = {
-  spawn(api?: Partial<C>): WorkerInterface<T>;
-  createPool(poolSize: number, api?: Partial<C>): WorkerPool<T>;
-};
+> = [keyof C] extends [never]
+  ? {
+      spawn(): WorkerInterface<T>;
+      createPool(poolSize: number): WorkerPool<T>;
+    }
+  : {
+      spawn(api: DepromisifyDict<C>): WorkerInterface<T>;
+      createPool(poolSize: number, api: DepromisifyDict<C>): WorkerPool<T>;
+    };
 
 /**
  * @internal
