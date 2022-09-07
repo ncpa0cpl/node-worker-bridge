@@ -1,0 +1,12 @@
+__tests__
+.vscode
+coverage
+node_modules
+scripts
+src
+.eslintignore
+.eslintrc
+.gitignore
+.prettierrc
+jest.config.js
+yarn-error.log
