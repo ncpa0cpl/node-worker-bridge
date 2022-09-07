@@ -1,5 +1,5 @@
 export { createSubscriptionManager } from "./subscription-manager";
-export {
+export type {
   Subscription,
   SubscriptionHandler,
   SubscriptionManager,
