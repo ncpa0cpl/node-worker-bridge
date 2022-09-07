@@ -1,7 +1,7 @@
 {
   "name": "@ncpa0cpl/node-worker-bridge",
   "version": "0.0.1",
-  "description": "",
+  "description": "Wrapper for Node's Workers, easily define methods and share them between main thread and worker.",
   "main": "./dist/legacy/index.js",
   "types": "./dist/types/index.d.ts",
   "exports": {
@@ -16,6 +16,9 @@
     "test": "jest --coverage"
   },
   "author": "Bretner Szymon (ncpa0cpl)",
+  "repository": {
+    "url": "https://github.com/ncpa0cpl/node-worker-bridge"
+  },
   "license": "MIT",
   "devDependencies": {
     "@ncpa0cpl/nodepack": "^1.2.4",
@@ -34,5 +37,13 @@
   },
   "dependencies": {
     "uuid": "^9.0.0"
-  }
+  },
+  "keywords": [
+    "node",
+    "worker",
+    "thread",
+    "multi-thread",
+    "multithread",
+    "worker_threads"
+  ]
 }
